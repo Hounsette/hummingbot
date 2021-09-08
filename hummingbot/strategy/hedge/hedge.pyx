@@ -172,6 +172,8 @@ cdef class HedgeStrategy(StrategyBase):
             str trading_pair = market_pair.trading_pair
             ExchangeBase market = market_pair.market
             object quantized_order_amount = market.c_quantize_order_amount(trading_pair, Decimal(amount))
+        if market_pair.quote != self._hedge_asset:
+            
         price = Decimal(price)
         price = price*(Decimal(1) + Decimal(self._slippage)) if is_buy else price*(Decimal(1) - Decimal(self._slippage))
         if quantized_order_amount*price>self._minimum_trade:
