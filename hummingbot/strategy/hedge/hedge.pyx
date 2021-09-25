@@ -172,8 +172,6 @@ cdef class HedgeStrategy(StrategyBase):
             str trading_pair = market_pair.trading_pair
             ExchangeBase market = market_pair.market
             object quantized_order_amount = market.c_quantize_order_amount(trading_pair, Decimal(amount))
-        if market_pair.quote != self._hedge_asset:
-            
         price = Decimal(price)
         price = price*(Decimal(1) + Decimal(self._slippage)) if is_buy else price*(Decimal(1) - Decimal(self._slippage))
         if quantized_order_amount*price>self._minimum_trade:
@@ -265,6 +263,20 @@ cdef class HedgeStrategy(StrategyBase):
                 float(order.quantity),
                 age
             ])
+        return pd.DataFrame(data=data, columns=columns)
+
+    def active_positions_df(self) -> pd.DataFrame:
+        columns = ["Symbol", "Type", "Entry Price", "Amount", "Leverage"]
+        data = []
+        for idx in self.active_positions.values():
+            data.append([
+                idx.trading_pair,
+                idx.position_side.name,
+                idx.entry_price,
+                idx.amount,
+                idx.leverage,
+            ])
+
         return pd.DataFrame(data=data, columns=columns)
 
     def format_status(self) -> str:

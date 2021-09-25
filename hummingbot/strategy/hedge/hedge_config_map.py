@@ -35,6 +35,30 @@ def market_validate(value: str) -> Optional[str]:
             return f"Duplicate market {pair}."
         pairs.append(pair)
 
+def asset_validate(value: str) -> Optional[str]:
+    tokens_list = list()
+    if len(value.strip()) == 0:
+        # Whitespace
+        return "Invalid market(s). The given entry is empty."
+    markets = list(value.upper().split(","))
+    for market in markets:
+        if len(market.strip()) == 0:
+            return "Invalid assets. The given entry contains an empty market."
+        tokens = market.strip().split("-")
+        if len(tokens) >= 2:
+            return f"Invalid asset. {market} contain more than 1 asset."
+        for token in tokens:
+            # Check allowed ticker lengths
+            if len(token.strip()) == 0:
+                return f"Invalid market. Ticker {token} has an invalid length."
+            if(bool(re.search('^[a-zA-Z0-9]*$', token)) is False):
+                return f"Invalid market. Ticker {token} contains invalid characters."
+            # The pair is valid
+
+            if token in tokens_list:
+                return f"Duplicate market {token}."
+            tokens_list.append(token)
+
 
 def asset_validate(value: str) -> Optional[str]:
     tokens_list = list()
@@ -71,7 +95,6 @@ def token_validate(value: str) -> Optional[str]:
             tokens.add(token.strip())
     if value not in tokens:
         return f"Invalid token. {value} is not one of {','.join(sorted(tokens))}"
-
 
 # List of parameters defined by the strategy
 hedge_config_map = {
