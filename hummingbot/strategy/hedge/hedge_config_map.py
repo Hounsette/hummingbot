@@ -35,6 +35,7 @@ def market_validate(value: str) -> Optional[str]:
             return f"Duplicate market {pair}."
         pairs.append(pair)
 
+
 def asset_validate(value: str) -> Optional[str]:
     tokens_list = list()
     if len(value.strip()) == 0:
@@ -95,6 +96,7 @@ def token_validate(value: str) -> Optional[str]:
             tokens.add(token.strip())
     if value not in tokens:
         return f"Invalid token. {value} is not one of {','.join(sorted(tokens))}"
+
 
 # List of parameters defined by the strategy
 hedge_config_map = {

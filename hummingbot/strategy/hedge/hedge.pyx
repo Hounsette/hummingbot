@@ -265,18 +265,23 @@ cdef class HedgeStrategy(StrategyBase):
             ])
         return pd.DataFrame(data=data, columns=columns)
 
-    def active_positions_df(self) -> pd.DataFrame:
-        columns = ["Symbol", "Type", "Entry Price", "Amount", "Leverage"]
-        data = []
-        for idx in self.active_positions.values():
-            data.append([
-                idx.trading_pair,
-                idx.position_side.name,
-                idx.entry_price,
-                idx.amount,
-                idx.leverage,
-            ])
+    def active_orders_df(self) -> pd.DataFrame:
 
+        active_orders = self.market_info_to_active_orders
+        columns = ["Market", "Type", "Price", "Amount", "Age"]
+        data = []
+        for active_order in active_orders:
+            # only 1 level should be present
+            order = active_orders[active_order][0]
+            market = order.trading_pair
+            age = order_age(order)
+            data.append([
+                market,
+                "buy" if order.is_buy else "sell",
+                float(order.price),
+                float(order.quantity),
+                age
+            ])
         return pd.DataFrame(data=data, columns=columns)
 
     def format_status(self) -> str:
