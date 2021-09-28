@@ -119,10 +119,14 @@ cdef class HedgeStrategy(StrategyBase):
             ExchangeBase market = market_pair.market
             object quantized_order_amount = market.c_quantize_order_amount(market_pair.trading_pair, Decimal(abs(hedge_amount)))
 <<<<<<< HEAD
+<<<<<<< HEAD
             object order_size_quantum = market.c_get_order_size_quantum(market_pair.trading_pair, quantized_order_amount)
 =======
             object order_size_quantum = market.c_get_order_size_quantum(market_pair.trading_pair,quantized_order_amount)
 >>>>>>> 95521cc16 (fix attempt on dydx rate limit encountered)
+=======
+            object order_size_quantum = market.c_get_order_size_quantum(market_pair.trading_pair, quantized_order_amount)
+>>>>>>> eb0b9f454 (code format update)
         if active_orders is None or len(active_orders)<1:
             return
         o = active_orders[0]
@@ -250,6 +254,7 @@ cdef class HedgeStrategy(StrategyBase):
         if position_updated:
             self._last_trade_time["last updated"]=self._current_timestamp
 
+<<<<<<< HEAD
     def active_orders_df(self) -> pd.DataFrame:
 
         active_orders = self.market_info_to_active_orders
@@ -269,6 +274,8 @@ cdef class HedgeStrategy(StrategyBase):
             ])
         return pd.DataFrame(data=data, columns=columns)
 
+=======
+>>>>>>> eb0b9f454 (code format update)
     def active_orders_df(self) -> pd.DataFrame:
 
         active_orders = self.market_info_to_active_orders
