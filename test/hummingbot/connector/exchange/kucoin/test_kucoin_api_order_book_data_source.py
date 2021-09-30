@@ -11,11 +11,6 @@ from typing import (
 )
 from unittest.mock import patch, AsyncMock
 
-import aiohttp
-import websockets
-import websockets.legacy.client
-from aioresponses import aioresponses
-
 from hummingbot.connector.exchange.kucoin.kucoin_api_order_book_data_source import (
     KucoinAPIOrderBookDataSource,
     KucoinWSConnectionIterator,
@@ -84,8 +79,8 @@ class TestKucoinWSConnectionIterator(KucoinTestProviders, unittest.TestCase):
         }
         mock_api.post(url, body=json.dumps(resp_data))
 
-        ret = self.async_run_with_timeout(KucoinWSConnectionIterator.get_ws_connection_context())
-        self.assertTrue(isinstance(ret, websockets.legacy.client.Connect))
+        ret = self.async_run_with_timeout(KucoinWSConnectionIterator.get_ws_connection_url())
+        self.assertTrue("ws://someEndpoint?token=someToken&acceptUserMessage=true", ret)
 
     @patch("aiohttp.client.ClientSession.ws_connect", new_callable=AsyncMock)
     def test_update_subscription(self, ws_connect_mock):
