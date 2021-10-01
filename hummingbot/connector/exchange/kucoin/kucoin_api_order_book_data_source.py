@@ -24,21 +24,20 @@ from websockets.legacy.client import Connect as WSConnectionContext
 from urllib.parse import urlencode
 from yarl import URL
 
-
+from hummingbot.connector.exchange.kucoin.kucoin_auth import KucoinAuth
+from hummingbot.connector.exchange.kucoin.kucoin_order_book import KucoinOrderBook
+from hummingbot.connector.exchange.kucoin.kucoin_active_order_tracker import KucoinActiveOrderTracker
 from hummingbot.core.api_throttler.async_throttler import AsyncThrottler
 from hummingbot.core.data_type.order_book_tracker_data_source import OrderBookTrackerDataSource
 from hummingbot.core.data_type.order_book_message import OrderBookMessage
 from hummingbot.core.data_type.order_book import OrderBook
-from hummingbot.logger import HummingbotLogger
-from hummingbot.connector.exchange.kucoin.kucoin_auth import KucoinAuth
-from hummingbot.connector.exchange.kucoin.kucoin_order_book import KucoinOrderBook
-from hummingbot.connector.exchange.kucoin.kucoin_active_order_tracker import KucoinActiveOrderTracker
 from hummingbot.core.utils.async_utils import safe_ensure_future
 from hummingbot.connector.exchange.kucoin.kucoin_utils import (
     convert_from_exchange_trading_pair,
     convert_to_exchange_trading_pair,
 )
 from hummingbot.connector.exchange.kucoin import kucoin_constants as CONSTANTS
+from hummingbot.logger import HummingbotLogger
 
 DIFF_STREAM_URL = ""
 
@@ -100,10 +99,10 @@ class KucoinWSConnectionIterator:
 
     def __del__(self):
         if self._client:
-            self._client.close()
+            safe_ensure_future(self._client.close())
             self._client = None
         if self._websocket:
-            self._websocket.close()
+            safe_ensure_future(self._websocket.close())
             self._websocket = None
 
     @classmethod
