@@ -53,6 +53,7 @@ def main():
         "hummingbot.connector.connector",
         "hummingbot.connector.connector.balancer",
         "hummingbot.connector.connector.terra",
+        "hummingbot.connector.connector.polkadex",
         "hummingbot.connector.exchange",
         "hummingbot.connector.exchange.ascend_ex",
         "hummingbot.connector.exchange.bamboo_relay",
