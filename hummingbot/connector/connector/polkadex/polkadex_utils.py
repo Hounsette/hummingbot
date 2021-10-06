@@ -27,8 +27,11 @@ KEYS = {
 
 class Polkadexhelper:
 
-    def __init__(self):
+    def __init__(self, polkadex_wallet_address: str, polkadex_wallet_seeds: str):
         runtime_config = RuntimeConfigurationObject(ss58_format=42)
         runtime_config.update_type_registry(load_type_registry_preset("default"))
         runtime_config.update_type_registry(load_type_registry_file("polkadex_types.json"))
         self.runtimeconfig = runtime_config
+        self.nonce = 0
+        self.polkadex_wallet_address = polkadex_wallet_address
+        self.polkadex_wallet_seeds = polkadex_wallet_seeds
