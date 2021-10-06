@@ -82,9 +82,7 @@ class PolkadexConnector(ConnectorBase):
 
     @staticmethod
     async def fetch_trading_pairs() -> List[str]:
-        return ["LUNA-UST", "LUNA-KRT", "LUNA-SDT", "LUNA-MNT",
-                "UST-KRT", "UST-SDT", "UST-MNT",
-                "KRT-SDT", "KRT-MNT", "SDT-MNT"]
+        return ["DOT-POLKADEX"]
 
     @property
     def limit_orders(self) -> List[LimitOrder]:
