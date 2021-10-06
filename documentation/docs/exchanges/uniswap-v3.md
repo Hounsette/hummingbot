@@ -7,12 +7,12 @@ This connector integrates with Uniswap V3, which introduces concentrated liquidi
 Source: https://docs.uniswap.org/protocol/concepts/V3-overview/concentrated-liquidity
 
 !!! warning
-    Currently, [Uniswap](/connectors/uniswap/) could not be used on Binary Installers since it would need a [gateway](/installation/gateway) connection for it to work. It can only be used when running Hummingbot from source or with Docker.
+    Currently, [Uniswap](/exchanges/uniswap-v3/) could not be used on Binary Installers since it would need a [gateway](/protocols/gateway/) connection for it to work. It can only be used when running Hummingbot from source or with Docker.
 
 ## Prerequisites
 
-- Ethereum wallet (refer to our guide [here](/operation/connect-exchange/#setup-ethereum-wallet))
-- Ethereum node (refer to our guide [here](/operation/connect-exchange/#setup-ethereum-nodes))
+- Ethereum wallet (refer to our guide [here](/protocols/ethereum/#connect-wallet))
+- Ethereum node (refer to our guide [here](/protocols/ethereum/#connect-node))
 - Hummingbot Gateway (done after connecting to Uniswap)
 - Some ETH in wallet for gas
 - Inventory on both base and quote assets for the connectors
