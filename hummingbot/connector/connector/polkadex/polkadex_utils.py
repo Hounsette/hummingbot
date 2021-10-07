@@ -73,8 +73,17 @@ class Polkadexhelper:
             keypair = Keypair.create_from_mnemonic(self.polkadex_wallet_seeds)
 
         trustedcallsigned = self.sign_Trustedcall(callencoded, call, keypair)
-        trustedoperation = self.generate_TrustedOperation_encoded(trustedcallsigned)
-        print(trustedoperation)
+        trustedoperationencoded = self.generate_TrustedOperation_encoded(trustedcallsigned)
+
+        directrequest = self.generate_DirectRequest(trustedoperationencoded)
+        request = {
+            "jsonrpc": "2.0",
+            "method": "place_order",
+            "params": list(directrequest),
+            "id": 1
+        }
+
+        return request
 
     def sign_Trustedcall(self, trustedcallencoded, trustedcall, keypair) -> dict:
 
@@ -103,3 +112,11 @@ class Polkadexhelper:
         data = self.runtimeconfig.create_scale_object("TrustedOperation")
         trustedoperation = data.encode({"direct_call": trustedcallsigned})
         return trustedoperation
+
+    def generate_DirectRequest(self, trustedoperationencoded) -> bytearray:
+        data = self.runtimeconfig.create_scale_object("DirectRequest")
+        shard = "0x" + base58.b58decode(self.shardhash).hex()
+        directrequest = data.encode({
+            "shard": shard,
+            "encoded_text": list(trustedoperationencoded.data)})
+        return directrequest.data
