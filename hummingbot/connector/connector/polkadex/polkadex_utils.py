@@ -3,7 +3,8 @@ from hummingbot.client.config.config_var import ConfigVar
 from hummingbot.client.settings import required_exchanges
 from scalecodec.base import ScaleType, RuntimeConfigurationObject
 from scalecodec.type_registry import load_type_registry_file, load_type_registry_preset
-
+from substrateinterface import Keypair
+import base58
 
 CENTRALIZED = False
 EXAMPLE_PAIR = "LUNA-UST"
@@ -28,7 +29,7 @@ KEYS = {
 
 class Polkadexhelper:
 
-    def __init__(self, polkadex_wallet_address: str, polkadex_wallet_seeds: str):
+    def __init__(self, polkadex_wallet_address: str, polkadex_wallet_seeds: str, mrenclavehash: str, shardhash: str):
         runtime_config = RuntimeConfigurationObject(ss58_format=42)
         runtime_config.update_type_registry(load_type_registry_preset("default"))
         runtime_config.update_type_registry(load_type_registry_file("polkadex_types.json"))
@@ -36,6 +37,8 @@ class Polkadexhelper:
         self.nonce = 0
         self.polkadex_wallet_address = polkadex_wallet_address
         self.polkadex_wallet_seeds = polkadex_wallet_seeds
+        self.mrenclavehash = mrenclavehash
+        self.shardhash = shardhash
 
     def generate_Trustedcall_encoded(self, call) -> ScaleType:
 
@@ -63,4 +66,35 @@ class Polkadexhelper:
         call = {"place_order": (self.polkadex_wallet_address, order, None)}
         callencoded = self.generate_Trustedcall_encoded(call)
 
-        print(callencoded)
+        """ generate keypair from seed """
+        if self.polkadex_wallet_seeds[0] == "/":       # only for test purposes
+            keypair = Keypair.create_from_uri(self.polkadex_wallet_seeds)
+        else:
+            keypair = Keypair.create_from_mnemonic(self.polkadex_wallet_seeds)
+
+        trustedcallsigned = self.sign_Trustedcall(callencoded, call, keypair)
+
+        print(trustedcallsigned)
+
+    def sign_Trustedcall(self, trustedcallencoded, trustedcall, keypair) -> dict:
+
+        mrenclave = "0x" + base58.b58decode(self.mrenclavehash).hex()
+        shard = "0x" + base58.b58decode(self.shardhash).hex()
+
+        nonceencoded = self.runtimeconfig.create_scale_object("U32")
+        nonceencoded = nonceencoded.encode(self.nonce)
+
+        mrenclaveencoded = self.runtimeconfig.create_scale_object("H256")
+        mrenclaveencoded = mrenclaveencoded.encode(mrenclave)
+
+        shardencoded = self.runtimeconfig.create_scale_object("H256")
+        shardencoded = shardencoded.encode(shard)
+
+        payload = trustedcallencoded.data + nonceencoded.data + mrenclaveencoded.data + shardencoded.data
+        signature = keypair.sign(payload.hex())
+        trustedcallsigned = {
+            "call": trustedcall,
+            "nonce": self.nonce,
+            "signature": signature
+        }
+        return trustedcallsigned
