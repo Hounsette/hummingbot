@@ -1,7 +1,7 @@
 from decimal import Decimal
 from hummingbot.client.config.config_var import ConfigVar
 from hummingbot.client.settings import required_exchanges
-from scalecodec.base import ScaleType, RuntimeConfigurationObject
+from scalecodec.base import ScaleType, RuntimeConfigurationObject, ScaleBytes
 from scalecodec.type_registry import load_type_registry_file, load_type_registry_preset
 from substrateinterface import Keypair
 import base58
@@ -73,8 +73,8 @@ class Polkadexhelper:
             keypair = Keypair.create_from_mnemonic(self.polkadex_wallet_seeds)
 
         trustedcallsigned = self.sign_Trustedcall(callencoded, call, keypair)
-
-        print(trustedcallsigned)
+        trustedoperation = self.generate_TrustedOperation_encoded(trustedcallsigned)
+        print(trustedoperation)
 
     def sign_Trustedcall(self, trustedcallencoded, trustedcall, keypair) -> dict:
 
@@ -98,3 +98,8 @@ class Polkadexhelper:
             "signature": signature
         }
         return trustedcallsigned
+
+    def generate_TrustedOperation_encoded(self, trustedcallsigned) -> ScaleBytes:
+        data = self.runtimeconfig.create_scale_object("TrustedOperation")
+        trustedoperation = data.encode({"direct_call": trustedcallsigned})
+        return trustedoperation
