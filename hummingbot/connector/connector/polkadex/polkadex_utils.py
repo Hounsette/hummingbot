@@ -1,3 +1,4 @@
+from decimal import Decimal
 from hummingbot.client.config.config_var import ConfigVar
 from hummingbot.client.settings import required_exchanges
 from scalecodec.base import RuntimeConfigurationObject
@@ -35,3 +36,20 @@ class Polkadexhelper:
         self.nonce = 0
         self.polkadex_wallet_address = polkadex_wallet_address
         self.polkadex_wallet_seeds = polkadex_wallet_seeds
+
+    def generate_JSONRPC_placeorder(self, is_buy: bool, base: str, quote: str, markettype: str, amount: Decimal, price=0):
+
+        side = "BID" if is_buy else "ASK"
+        orderprice = None if price == 0 else price
+        market_type = [115, 112, 111, 116] if markettype == "SPOT" else [116, 114, 117, 115, 116, 101, 100]
+
+        order = {
+            "user_uid": self.polkadex_wallet_address,
+            "market_id": {"base": base, "quote": quote},
+            "market_type": market_type,
+            "order_type": "LIMIT",
+            "side": side,
+            "quantity": amount,
+            "price": orderprice,
+        }
+        print(order)
