@@ -1,7 +1,7 @@
 from decimal import Decimal
 from hummingbot.client.config.config_var import ConfigVar
 from hummingbot.client.settings import required_exchanges
-from scalecodec.base import RuntimeConfigurationObject
+from scalecodec.base import ScaleType, RuntimeConfigurationObject
 from scalecodec.type_registry import load_type_registry_file, load_type_registry_preset
 
 
@@ -37,6 +37,13 @@ class Polkadexhelper:
         self.polkadex_wallet_address = polkadex_wallet_address
         self.polkadex_wallet_seeds = polkadex_wallet_seeds
 
+    def generate_Trustedcall_encoded(self, call) -> ScaleType:
+
+        data = self.runtimeconfig.create_scale_object("TrustedCall")
+        data = data.encode(call)
+
+        return data
+
     def generate_JSONRPC_placeorder(self, is_buy: bool, base: str, quote: str, markettype: str, amount: Decimal, price=0):
 
         side = "BID" if is_buy else "ASK"
@@ -52,4 +59,8 @@ class Polkadexhelper:
             "quantity": amount,
             "price": orderprice,
         }
-        print(order)
+
+        call = {"place_order": (self.polkadex_wallet_address, order, None)}
+        callencoded = self.generate_Trustedcall_encoded(call)
+
+        print(callencoded)
