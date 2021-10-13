@@ -110,7 +110,7 @@ def create_output_field():
 
 def create_timer():
     return TextArea(
-        style='class:title',
+        style='class:footer',
         focus_on_click=False,
         read_only=False,
         scrollbar=False,
@@ -121,7 +121,7 @@ def create_timer():
 
 def create_process_monitor():
     return TextArea(
-        style='class:title',
+        style='class:footer',
         focus_on_click=False,
         read_only=False,
         scrollbar=False,
@@ -132,7 +132,7 @@ def create_process_monitor():
 
 def create_trade_monitor():
     return TextArea(
-        style='class:title',
+        style='class:footer',
         focus_on_click=False,
         read_only=False,
         scrollbar=False,
@@ -171,7 +171,7 @@ def create_log_toggle(function):
 
 
 def get_version():
-    return [("class:title", f"Version: {version}")]
+    return [("class:header", f"Version: {version}")]
 
 
 def get_paper_trade_status():
@@ -236,30 +236,12 @@ def generate_layout(input_field: TextArea,
         ], height=1),
         VSplit([
             FloatContainer(
-                HSplit([
-                    output_field,
-                    input_field,
-                ]),
-                [
-                    # Completion menus.
-                    Float(xcursor=True,
-                          ycursor=True,
-                          transparent=True,
-                          content=CompletionsMenu(
-                              max_height=16,
-                              scroll_offset=1)),
-                ]
+                components["pane_left"],
+                components["hint_menus"]
             ),
-            HSplit([
-                log_field,
-                search_field,
-            ]),
+            components["pane_right"],
         ]),
-        VSplit([
-            trade_monitor,
-            process_monitor,
-            timer,
-        ], height=1),
+        components["pane_bottom"],
 
     ])
     return Layout(root_container, focused_element=input_field), logs_container
