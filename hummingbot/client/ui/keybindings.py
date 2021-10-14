@@ -18,6 +18,7 @@ from hummingbot.client.ui.scroll_handlers import (
     scroll_up,
 )
 from hummingbot.core.utils.async_utils import safe_ensure_future
+from hummingbot.client.ui.style import reset_style
 
 
 def load_key_bindings(hb) -> KeyBindings:
