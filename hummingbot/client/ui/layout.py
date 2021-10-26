@@ -1,14 +1,10 @@
-#!/usr/bin/env python
-
-from os.path import join, realpath, dirname
-import sys; sys.path.insert(0, realpath(join(__file__, "../../../")))
-
+from os.path import dirname, join, realpath
 from prompt_toolkit.layout.containers import (
-    VSplit,
-    HSplit,
-    Window,
-    FloatContainer,
     Float,
+    FloatContainer,
+    HSplit,
+    VSplit,
+    Window,
     WindowAlign,
 )
 from prompt_toolkit.layout.menus import CompletionsMenu
@@ -16,7 +12,7 @@ from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer
 from prompt_toolkit.layout.controls import FormattedTextControl
-from prompt_toolkit.widgets import SearchToolbar, Button
+from prompt_toolkit.widgets import Box, Button, SearchToolbar
 
 from hummingbot.client.ui.custom_widgets import CustomTextArea as TextArea
 from hummingbot.client.settings import (
@@ -242,6 +238,5 @@ def generate_layout(input_field: TextArea,
             components["pane_right"],
         ]),
         components["pane_bottom"],
-
     ])
     return Layout(root_container, focused_element=input_field), logs_container
