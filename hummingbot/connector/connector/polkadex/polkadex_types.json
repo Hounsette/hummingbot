@@ -28,6 +28,7 @@
             ]
         ]
         },
+        "CurrencyId": "AssetId",
         "MarketId": {
             "type": "struct",
             "type_mapping": [

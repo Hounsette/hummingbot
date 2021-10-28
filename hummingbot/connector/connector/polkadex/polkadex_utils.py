@@ -52,6 +52,13 @@ class Polkadexhelper:
 
         return data
 
+    def generate_TrustedGetter_encoded(self, call) -> ScaleType:
+
+        data = self.runtimeconfig.create_scale_object("TrustedGetter")
+        data = data.encode(call)
+
+        return data
+
     def generate_JSONRPC_placeorder(self, is_buy: bool, base: str, quote: str, markettype: str, amount: Decimal, price=0):
 
         side = "BID" if is_buy else "ASK"
@@ -71,7 +78,7 @@ class Polkadexhelper:
         callencoded = self.generate_Trustedcall_encoded(call)
 
         trustedcallsigned = self.sign_Trustedcall(callencoded, call)
-        trustedoperationencoded = self.generate_TrustedOperation_encoded(trustedcallsigned)
+        trustedoperationencoded = self.generate_TrustedOperation_encoded(trustedcallsigned, "direct_call")
 
         directrequest = self.generate_DirectRequest(trustedoperationencoded)
         request = {
@@ -82,6 +89,39 @@ class Polkadexhelper:
         }
 
         return request
+
+    def generate_JSONRPC_getbalance(self, currencyId: str):
+
+        call = {"get_balance": (self.keypair.public_key, currencyId, None)}
+        callencoded = self.generate_TrustedGetter_encoded(call)
+
+        trustedGetterSigned = self.sign_TrustedGetter(callencoded, call)
+        getter = {"trusted": trustedGetterSigned}
+        trustedoperationencoded = self.generate_TrustedOperation_encoded(getter, "get")
+
+        directrequest = self.generate_DirectRequest(trustedoperationencoded)
+        request = {
+            "jsonrpc": "2.0",
+            "method": "get_balance",
+            "params": list(directrequest),
+            "id": 1
+        }
+
+        return request
+
+    def sign_TrustedGetter(self, trustedcallencoded, trustedcall) -> dict:
+
+        payload = trustedcallencoded
+
+        signature = self.keypair.sign(payload)
+
+        signatureSr25519 = {"Sr25519": signature}
+
+        trustedGettersigned = {
+            "getter": trustedcall,
+            "signature": signatureSr25519
+        }
+        return trustedGettersigned
 
     def sign_Trustedcall(self, trustedcallencoded, trustedcall) -> dict:
 
@@ -110,9 +150,9 @@ class Polkadexhelper:
         }
         return trustedcallsigned
 
-    def generate_TrustedOperation_encoded(self, trustedcallsigned) -> ScaleBytes:
+    def generate_TrustedOperation_encoded(self, trustedcallsigned, typeofcall: str) -> ScaleBytes:
         data = self.runtimeconfig.create_scale_object("TrustedOperation")
-        trustedoperation = data.encode({"direct_call": trustedcallsigned})
+        trustedoperation = data.encode({typeofcall: trustedcallsigned})
         return trustedoperation
 
     def generate_DirectRequest(self, trustedoperationencoded) -> bytearray:
