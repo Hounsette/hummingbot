@@ -108,7 +108,7 @@
             "type_mapping": [
             ["call", "TrustedCall"],
             ["nonce", "Index"],
-            ["signature", "Signature"]
+            ["signature", "MultiSignature"]
             ]
         },
         "TrustedOperation": {
@@ -177,7 +177,7 @@
             "type": "struct",
             "type_mapping": [
                 ["getter", "TrustedGetter"],
-                ["signature", "Signature"]
+                ["signature", "MultiSignature"]
             ]
         },
         "TrustedGetter": {

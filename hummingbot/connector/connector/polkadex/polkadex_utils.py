@@ -29,16 +29,21 @@ KEYS = {
 
 class Polkadexhelper:
 
-    def __init__(self, polkadex_wallet_address: str, polkadex_wallet_seeds: str, mrenclavehash: str, shardhash: str):
+    def __init__(self, polkadex_wallet_seeds: str, mrenclavehash: str, shardhash: str):
         runtime_config = RuntimeConfigurationObject(ss58_format=42)
         runtime_config.update_type_registry(load_type_registry_preset("default"))
         runtime_config.update_type_registry(load_type_registry_file("polkadex_types.json"))
         self.runtimeconfig = runtime_config
         self.nonce = 0
-        self.polkadex_wallet_address = polkadex_wallet_address
         self.polkadex_wallet_seeds = polkadex_wallet_seeds
         self.mrenclavehash = mrenclavehash
         self.shardhash = shardhash
+        """ generate keypair from seed """
+        if self.polkadex_wallet_seeds[0] == "/":       # only for test purposes
+            keypair = Keypair.create_from_uri(self.polkadex_wallet_seeds)
+        else:
+            keypair = Keypair.create_from_mnemonic(self.polkadex_wallet_seeds)
+        self.keypair = keypair
 
     def generate_Trustedcall_encoded(self, call) -> ScaleType:
 
@@ -54,7 +59,7 @@ class Polkadexhelper:
         market_type = [115, 112, 111, 116] if markettype == "SPOT" else [116, 114, 117, 115, 116, 101, 100]
 
         order = {
-            "user_uid": self.polkadex_wallet_address,
+            "user_uid": self.keypair.public_key,
             "market_id": {"base": base, "quote": quote},
             "market_type": market_type,
             "order_type": "LIMIT",
@@ -62,17 +67,10 @@ class Polkadexhelper:
             "quantity": amount,
             "price": orderprice,
         }
-
-        call = {"place_order": (self.polkadex_wallet_address, order, None)}
+        call = {"place_order": (self.keypair.public_key, order, None)}
         callencoded = self.generate_Trustedcall_encoded(call)
 
-        """ generate keypair from seed """
-        if self.polkadex_wallet_seeds[0] == "/":       # only for test purposes
-            keypair = Keypair.create_from_uri(self.polkadex_wallet_seeds)
-        else:
-            keypair = Keypair.create_from_mnemonic(self.polkadex_wallet_seeds)
-
-        trustedcallsigned = self.sign_Trustedcall(callencoded, call, keypair)
+        trustedcallsigned = self.sign_Trustedcall(callencoded, call)
         trustedoperationencoded = self.generate_TrustedOperation_encoded(trustedcallsigned)
 
         directrequest = self.generate_DirectRequest(trustedoperationencoded)
@@ -85,7 +83,7 @@ class Polkadexhelper:
 
         return request
 
-    def sign_Trustedcall(self, trustedcallencoded, trustedcall, keypair) -> dict:
+    def sign_Trustedcall(self, trustedcallencoded, trustedcall) -> dict:
 
         mrenclave = "0x" + base58.b58decode(self.mrenclavehash).hex()
         shard = "0x" + base58.b58decode(self.shardhash).hex()
@@ -99,12 +97,16 @@ class Polkadexhelper:
         shardencoded = self.runtimeconfig.create_scale_object("H256")
         shardencoded = shardencoded.encode(shard)
 
-        payload = trustedcallencoded.data + nonceencoded.data + mrenclaveencoded.data + shardencoded.data
-        signature = keypair.sign(payload.hex())
+        payload = trustedcallencoded + nonceencoded + mrenclaveencoded + shardencoded
+
+        signature = self.keypair.sign(payload)
+
+        signatureSr25519 = {"Sr25519": signature}
+
         trustedcallsigned = {
             "call": trustedcall,
             "nonce": self.nonce,
-            "signature": signature
+            "signature": signatureSr25519
         }
         return trustedcallsigned
 
@@ -118,5 +120,5 @@ class Polkadexhelper:
         shard = "0x" + base58.b58decode(self.shardhash).hex()
         directrequest = data.encode({
             "shard": shard,
-            "encoded_text": list(trustedoperationencoded.data)})
+            "encoded_text": trustedoperationencoded.data})
         return directrequest.data
