@@ -122,3 +122,8 @@ class Polkadexhelper:
             "shard": shard,
             "encoded_text": trustedoperationencoded.data})
         return directrequest.data
+
+    def decode_RpcResult(self, data: bytearray) -> dict:
+        returndata = self.runtimeconfig.create_scale_object("RpcReturnValue", ScaleBytes(data))
+        returndata = returndata.decode()
+        return returndata
