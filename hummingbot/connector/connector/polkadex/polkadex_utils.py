@@ -90,6 +90,32 @@ class Polkadexhelper:
 
         return request
 
+    def generate_JSONRPC_cancelorder(self, uuid: str, base: str, quote: str):
+
+        data = self.runtimeconfig.create_scale_object("Vec<u8>")
+        uuidencoded = data.encode(uuid)
+
+        order = {
+            "user_uid": self.keypair.public_key,
+            "market_id": {"base": base, "quote": quote},
+            "order_id": list(uuidencoded.data)
+        }
+        call = {"cancel_order": (self.keypair.public_key, order, None)}
+        callencoded = self.generate_Trustedcall_encoded(call)
+
+        trustedcallsigned = self.sign_Trustedcall(callencoded, call)
+        trustedoperationencoded = self.generate_TrustedOperation_encoded(trustedcallsigned, "direct_call")
+
+        directrequest = self.generate_DirectRequest(trustedoperationencoded)
+        request = {
+            "jsonrpc": "2.0",
+            "method": "cancel_order",
+            "params": list(directrequest),
+            "id": 1
+        }
+
+        return request
+
     def generate_JSONRPC_getbalance(self, currencyId: str):
 
         call = {"get_balance": (self.keypair.public_key, currencyId, None)}
