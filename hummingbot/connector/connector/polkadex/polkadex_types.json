@@ -190,7 +190,14 @@
                 ["get_balance", "GetBalanceArgs"]
             ]
         },
-        "GetBalanceArgs": "(AccountId, CurrencyId, Option<AccountId>)"
+        "GetBalanceArgs": "(AccountId, CurrencyId, Option<AccountId>)",
+        "Balances": {
+            "type": "struct",
+            "type_mapping": [
+            ["free", "Balance"],
+            ["reserved", "Balance"]
+            ]
+        }
     }
 
 
