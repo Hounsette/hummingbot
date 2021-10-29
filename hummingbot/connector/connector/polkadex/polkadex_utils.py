@@ -167,3 +167,8 @@ class Polkadexhelper:
         returndata = self.runtimeconfig.create_scale_object("RpcReturnValue", ScaleBytes(data))
         returndata = returndata.decode()
         return returndata
+
+    def decode_balance(self, data) -> dict:
+        returndata = self.runtimeconfig.create_scale_object("Balances", ScaleBytes(data))
+        returndata = returndata.decode()
+        return returndata
