@@ -197,6 +197,14 @@
             ["free", "Balance"],
             ["reserved", "Balance"]
             ]
+        },
+        "CancelOrder": {
+            "type": "struct",
+            "type_mapping": [
+            ["user_uid", "UserId"],
+            ["market_id", "MarketId"],
+            ["order_id", "OrderUUID"]
+            ]
         }
     }
 
