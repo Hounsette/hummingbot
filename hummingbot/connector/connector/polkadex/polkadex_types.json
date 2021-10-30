@@ -1,0 +1,214 @@
+{
+    "types": {
+        "ShardIdentifier": "H256",
+        "OrderUUID": "Vec<u8>",
+        "UserId":"AccountId",
+        "AssetId": {
+            "type": "enum",
+            "type_mapping": [
+            [
+                "POLKADEX",
+                "Null"
+            ],
+            [
+                "DOT",
+                "Null"
+            ],
+            [
+                "CHAINSAFE",
+                "H160"
+            ],
+            [
+                "BTC",
+                "Null"
+            ],
+            [
+                "USD",
+                "Null"
+            ]
+        ]
+        },
+        "CurrencyId": "AssetId",
+        "MarketId": {
+            "type": "struct",
+            "type_mapping": [
+            ["base", "AssetId"],
+            ["quote", "AssetId"]
+            ]
+        },
+        "OrderType": {
+            "type": "enum",
+            "type_mapping": [
+            [
+                "LIMIT",
+                "Null"
+            ],
+            [
+                "MARKET",
+                "Null"
+            ],
+            [
+                "PostOnly",
+                "Null"
+            ],
+            [
+                "FillOrKill",
+                "Null"
+            ]
+        ]
+        },
+        "OrderSide": {
+            "type": "enum",
+            "type_mapping": [
+            [
+                "BID",
+                "Null"
+            ],
+            [
+                "ASK",
+                "Null"
+            ]
+        ]
+        },
+        "PriceAndQuantityType":"Balance",
+        "MarketType": "Vec<u8>",
+        "Order": {
+            "type": "struct",
+            "type_mapping": [
+            ["user_uid", "UserId"],
+            ["market_id", "MarketId"],
+            ["market_type", "MarketType"],
+            ["order_type", "OrderType"],
+            ["side", "OrderSide"],
+            ["quantity", "PriceAndQuantityType"],
+            ["price", "Option<PriceAndQuantityType>"]
+            ]
+        },
+        "TrustedCall": {
+            "type":"enum",
+            "type_mapping": [
+                ["balance_set_balance", "balanceSetBalanceArgs"],
+                ["balance_transfer", "balanceTransferArgs"],
+                ["balance_unshield", "balanceUnshieldArgs"], 
+                ["balance_shield", "balanceShieldArgs"],                     
+                ["place_order", "PlaceOrderArgs"], 
+                ["cancel_order", "CancelOrderArgs"], 
+                ["withdraw", "WithdrawArgs"] 
+            ]
+        },
+        "balanceSetBalanceArgs": "(AccountId, AccountId, Balance, Balance)",
+        "balanceTransferArgs": "(AccountId, AccountId, Balance)",
+        "balanceUnshieldArgs": "(AccountId, AccountId, Balance, ShardIdentifier)",
+        "balanceShieldArgs": "(AccountId, Balance)",
+        "PlaceOrderArgs": "(AccountId, Order, Option<AccountId>)",
+        "CancelOrderArgs": "(AccountId, CancelOrder, Option<AccountId>)",
+        "WithdrawArgs": "(AccountId, CurrencyId, Balance, Option<AccountId>)",
+
+        "TrustedCallSigned": {
+            "type": "struct",
+            "type_mapping": [
+            ["call", "TrustedCall"],
+            ["nonce", "Index"],
+            ["signature", "MultiSignature"]
+            ]
+        },
+        "TrustedOperation": {
+            "type":"enum",
+            "type_mapping": [
+                ["indirect_call", "TrustedCallSigned"],
+                ["direct_call", "TrustedCallSigned"],
+                ["get", "Getter"]
+            ]
+        },
+
+        "TrustedOperationStatus": {
+            "type":"enum",
+            "type_mapping": [
+                ["Submitted", "Null"],
+                ["Future", "Null"],
+                ["Ready", "Null"],
+                ["Broadcast", "Null"],
+                ["InSidechainBlock", "H256"],
+                ["Retracted", "Null"],
+                ["FinalityTimeout", "Null"],
+                ["Finalized", "Null"],
+                ["Usurped", "Null"],
+                ["Dropped", "Null"],
+                ["Invalid", "Null"]
+            ]
+        },
+        "DirectRequestStatus": {
+            "type":"enum",
+            "type_mapping": [
+                ["Ok", "Null"],
+                ["TrustedOperationStatus", "TrustedOperationStatus"],
+                ["Error", "Null"]
+            ]
+        },
+        "RpcReturnValue": {
+            "type": "struct",
+            "type_mapping": [
+                ["value", "Vec<u8>"],
+                ["do_watch", "bool"],
+                ["status", "DirectRequestStatus"]
+            ]
+        },
+        "DirectRequest": {
+            "type": "struct",
+            "type_mapping": [
+                ["shard", "ShardIdentifier"],
+                ["encoded_text", "Vec<u8>"]
+            ]
+        },
+        "Getter": {
+            "type":"enum",
+            "type_mapping": [
+                ["public", "PublicGetter"],
+                ["trusted", "TrustedGetterSigned"]
+            ]
+        },
+        "PublicGetter": {
+            "type":"enum",
+            "type_mapping": [
+                ["some_value", "Null"]
+
+            ]
+        },
+        "TrustedGetterSigned": {
+            "type": "struct",
+            "type_mapping": [
+                ["getter", "TrustedGetter"],
+                ["signature", "MultiSignature"]
+            ]
+        },
+        "TrustedGetter": {
+            "type":"enum",
+            "type_mapping": [
+                ["free_balance", "AccountId"],
+                ["reserved_balance", "AccountId"],
+                ["nonce", "AccountId"],
+                ["get_balance", "GetBalanceArgs"]
+            ]
+        },
+        "GetBalanceArgs": "(AccountId, CurrencyId, Option<AccountId>)",
+        "Balances": {
+            "type": "struct",
+            "type_mapping": [
+            ["free", "Balance"],
+            ["reserved", "Balance"]
+            ]
+        },
+        "CancelOrder": {
+            "type": "struct",
+            "type_mapping": [
+            ["user_uid", "UserId"],
+            ["market_id", "MarketId"],
+            ["order_id", "OrderUUID"]
+            ]
+        }
+    }
+
+
+    
+}
+
