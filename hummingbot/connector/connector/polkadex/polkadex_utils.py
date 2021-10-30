@@ -163,6 +163,7 @@ class Polkadexhelper:
         shardencoded = self.runtimeconfig.create_scale_object("H256")
         shardencoded = shardencoded.encode(shard)
 
+
         payload = trustedcallencoded + nonceencoded + mrenclaveencoded + shardencoded
 
         signature = self.keypair.sign(payload)
@@ -198,3 +199,4 @@ class Polkadexhelper:
         returndata = self.runtimeconfig.create_scale_object("Balances", ScaleBytes(data))
         returndata = returndata.decode()
         return returndata
+

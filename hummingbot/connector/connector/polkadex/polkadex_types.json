@@ -178,6 +178,7 @@
             "type": "struct",
             "type_mapping": [
                 ["getter", "TrustedGetter"],
+
                 ["signature", "MultiSignature"]
             ]
         },
