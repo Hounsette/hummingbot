@@ -89,10 +89,14 @@ class GateIoExchange(ExchangeBase):
         self._trading_pairs = trading_pairs
         self._gate_io_auth = GateIoAuth(gate_io_api_key, gate_io_secret_key)
         self._throttler = AsyncThrottler(CONSTANTS.RATE_LIMITS)
-        self._order_book_tracker = GateIoOrderBookTracker(self._throttler, trading_pairs=trading_pairs)
-        self._user_stream_tracker = GateIoUserStreamTracker(self._gate_io_auth, trading_pairs)
+        self._shared_client = aiohttp.ClientSession()
+        self._order_book_tracker = GateIoOrderBookTracker(
+            self._throttler, trading_pairs, self._shared_client
+        )
+        self._user_stream_tracker = GateIoUserStreamTracker(
+            self._gate_io_auth, trading_pairs, self._shared_client
+        )
         self._ev_loop = asyncio.get_event_loop()
-        self._shared_client = None
         self._poll_notifier = asyncio.Event()
         self._last_timestamp = 0
         self._in_flight_orders = {}  # Dict[client_order_id:str, GateIoInFlightOrder]
@@ -783,20 +787,12 @@ class GateIoExchange(ExchangeBase):
             "text": "user_defined_text",
         }
         """
-        exchange_order_id = str(trade_msg["order_id"])
         client_order_id = str(trade_msg["text"])
-        tracked_orders = list(self._in_flight_orders.values())
-        track_order = [o for o in tracked_orders
-                       if exchange_order_id == o.exchange_order_id or client_order_id == o.client_order_id]
-        if not track_order:
-            return
-        tracked_order = track_order[0]
-
-        updated = tracked_order.update_with_trade_update(trade_msg)
-
-        if not updated:
-            return
-        safe_ensure_future(self._trigger_order_fill(tracked_order, trade_msg))
+        tracked_order = self.in_flight_orders.get(client_order_id, None)
+        if tracked_order:
+            updated = tracked_order.update_with_trade_update(trade_msg)
+            if updated:
+                safe_ensure_future(self._trigger_order_fill(tracked_order, trade_msg))
 
     async def _trigger_order_fill(self,
                                   tracked_order: GateIoInFlightOrder,

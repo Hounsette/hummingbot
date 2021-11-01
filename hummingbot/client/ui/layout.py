@@ -1,14 +1,10 @@
-#!/usr/bin/env python
-
-from os.path import join, realpath, dirname
-import sys; sys.path.insert(0, realpath(join(__file__, "../../../")))
-
+from os.path import dirname, join, realpath
 from prompt_toolkit.layout.containers import (
-    VSplit,
-    HSplit,
-    Window,
-    FloatContainer,
     Float,
+    FloatContainer,
+    HSplit,
+    VSplit,
+    Window,
     WindowAlign,
 )
 from prompt_toolkit.layout.menus import CompletionsMenu
@@ -16,7 +12,7 @@ from prompt_toolkit.layout.layout import Layout
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import Completer
 from prompt_toolkit.layout.controls import FormattedTextControl
-from prompt_toolkit.widgets import SearchToolbar
+from prompt_toolkit.widgets import Box, Button, SearchToolbar
 
 from hummingbot.client.ui.custom_widgets import CustomTextArea as TextArea
 from hummingbot.client.settings import (
@@ -56,12 +52,11 @@ HEADER = """
                                             , */
 
 
-██╗  ██╗██╗   ██╗███╗   ███╗███╗   ███╗██╗███╗   ██╗ ██████╗ ██████╗  ██████╗ ████████╗
-██║  ██║██║   ██║████╗ ████║████╗ ████║██║████╗  ██║██╔════╝ ██╔══██╗██╔═══██╗╚══██╔══╝
-███████║██║   ██║██╔████╔██║██╔████╔██║██║██╔██╗ ██║██║  ███╗██████╔╝██║   ██║   ██║
-██╔══██║██║   ██║██║╚██╔╝██║██║╚██╔╝██║██║██║╚██╗██║██║   ██║██╔══██╗██║   ██║   ██║
-██║  ██║╚██████╔╝██║ ╚═╝ ██║██║ ╚═╝ ██║██║██║ ╚████║╚██████╔╝██████╔╝╚██████╔╝   ██║
-╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═════╝  ╚═════╝    ╚═╝
+██   ██ ██    ██ ███    ███ ███    ███ ██ ███    ██  ██████  ██████   ██████  ████████
+██   ██ ██    ██ ████  ████ ████  ████ ██ ████   ██ ██       ██   ██ ██    ██    ██
+███████ ██    ██ ██ ████ ██ ██ ████ ██ ██ ██ ██  ██ ██   ███ ██████  ██    ██    ██
+██   ██ ██    ██ ██  ██  ██ ██  ██  ██ ██ ██  ██ ██ ██    ██ ██   ██ ██    ██    ██
+██   ██  ██████  ██      ██ ██      ██ ██ ██   ████  ██████  ██████   ██████     ██
 
 =======================================================================================
 Welcome to Hummingbot, an open source software client that helps you build and run
@@ -111,7 +106,7 @@ def create_output_field():
 
 def create_timer():
     return TextArea(
-        style='class:title',
+        style='class:footer',
         focus_on_click=False,
         read_only=False,
         scrollbar=False,
@@ -122,7 +117,7 @@ def create_timer():
 
 def create_process_monitor():
     return TextArea(
-        style='class:title',
+        style='class:footer',
         focus_on_click=False,
         read_only=False,
         scrollbar=False,
@@ -133,7 +128,7 @@ def create_process_monitor():
 
 def create_trade_monitor():
     return TextArea(
-        style='class:title',
+        style='class:footer',
         focus_on_click=False,
         read_only=False,
         scrollbar=False,
@@ -161,22 +156,32 @@ def create_log_field(search_field: SearchToolbar):
     )
 
 
+def create_log_toggle(function):
+    return Button(
+        text='> log pane',
+        width=13,
+        handler=function,
+        left_symbol='',
+        right_symbol=''
+    )
+
+
 def get_version():
-    return [("class:title", f"Version: {version}")]
+    return [("class:header", f"Version: {version}")]
 
 
 def get_paper_trade_status():
     from hummingbot.client.config.global_config_map import global_config_map
     enabled = global_config_map["paper_trade_enabled"].value is True
     paper_trade_status = "ON" if enabled else "OFF"
-    style = "class:primary" if enabled else "class:warning"
+    style = "class:primary" if enabled else "class:log-field"
     return [(style, f"paper_trade_mode: {paper_trade_status}")]
 
 
 def get_active_strategy():
     from hummingbot.client.hummingbot_application import HummingbotApplication
     hb = HummingbotApplication.main_application()
-    style = "class:primary"
+    style = "class:log-field"
     return [(style, f"Strategy: {hb.strategy_name}")]
 
 
@@ -199,17 +204,22 @@ def get_active_strategy():
 def get_strategy_file():
     from hummingbot.client.hummingbot_application import HummingbotApplication
     hb = HummingbotApplication.main_application()
-    style = "class:primary"
+    style = "class:log-field"
     return [(style, f"Strategy File: {hb._strategy_file_name}")]
 
 
 def generate_layout(input_field: TextArea,
                     output_field: TextArea,
                     log_field: TextArea,
+                    log_toggle: Button,
                     search_field: SearchToolbar,
                     timer: TextArea,
                     process_monitor: TextArea,
                     trade_monitor: TextArea):
+    logs_container = HSplit([
+        log_field,
+        search_field,
+    ])
     root_container = HSplit([
         VSplit([
             Window(FormattedTextControl(get_version), style="class:title"),
@@ -218,35 +228,15 @@ def generate_layout(input_field: TextArea,
             # Window(FormattedTextControl(get_active_markets), style="class:title"),
             # Window(FormattedTextControl(get_script_file), style="class:title"),
             Window(FormattedTextControl(get_strategy_file), style="class:title"),
+            log_toggle
         ], height=1),
         VSplit([
             FloatContainer(
-                HSplit([
-                    output_field,
-                    Window(height=1, char='-', style='class:primary'),
-                    input_field,
-                ]),
-                [
-                    # Completion menus.
-                    Float(xcursor=True,
-                          ycursor=True,
-                          transparent=True,
-                          content=CompletionsMenu(
-                              max_height=16,
-                              scroll_offset=1)),
-                ]
+                components["pane_left"],
+                components["hint_menus"]
             ),
-            Window(width=1, char='|', style='class:primary'),
-            HSplit([
-                log_field,
-                search_field,
-            ]),
+            components["pane_right"],
         ]),
-        VSplit([
-            trade_monitor,
-            process_monitor,
-            timer,
-        ], height=1),
-
+        components["pane_bottom"],
     ])
-    return Layout(root_container, focused_element=input_field)
+    return Layout(root_container, focused_element=input_field), logs_container
